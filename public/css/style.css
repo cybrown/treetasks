@@ -1,0 +1,26 @@
+body {
+    padding-top: 50px;
+}
+
+.starter-template {
+    padding: 40px 15px;
+    text-align: center;
+}
+
+.task .done {
+    text-decoration: line-through;
+}
+
+.task button {
+    font-size: 20px;
+}
+
+.task .task-description {
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+}
+
+.task form {
+    margin-bottom: 0;
+}

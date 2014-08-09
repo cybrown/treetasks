@@ -1,0 +1,3 @@
+<a ng-if="ctrl.task.parentId" class="btn btn-default" ui-sref="tasks.details.list({id: ctrl.task.parentId})">Parent</a>
+<div class="well">{{ctrl.task.description}}</div>
+<div ui-view></div>

@@ -1,0 +1,17 @@
+{
+  "name": "treetasks",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async-injector": "^0.3.2",
+    "bluebird": "^2.2.2",
+    "body-parser": "^1.6.2",
+    "express": "^4.8.2"
+  }
+}
