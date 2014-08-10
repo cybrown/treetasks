@@ -1,4 +1,14 @@
 <ul class="list-group">
+    <li class="task list-group-item">
+        <form ng-submit="ctrl.create(ctrl.defaultParentTaskId || 0, description); description = ''">
+            <div class="form-inline input-group">
+                <input class="form-control" type="text" ng-model="description"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                </span>
+            </div>
+        </form>
+    </li>
     <li class="task list-group-item clearfix" ng-repeat="task in ctrl.tasks">
         <div ng-show="!showCreate">
             <span class="task-description" ng-class="{'done': task.done}">{{task.description}}</span>
@@ -19,16 +29,6 @@
             <span class="input-group-btn">
                 <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
             </span>
-            </div>
-        </form>
-    </li>
-    <li class="task list-group-item">
-        <form ng-submit="ctrl.create(ctrl.defaultParentTaskId || 0, description); description = ''">
-            <div class="form-inline input-group">
-                <input class="form-control" type="text" ng-model="description"/>
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
-                </span>
             </div>
         </form>
     </li>
