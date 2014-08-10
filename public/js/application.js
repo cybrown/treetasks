@@ -101,6 +101,7 @@ TaskDetailsController.prototype.findTasks = function () {
 var TaskSearchController = function (taskService) {
     this.taskService = taskService;
     this.tasks = [];
+    this.searchTerm = '';
 };
 
 TaskSearchController.prototype.search = function () {
@@ -331,22 +332,26 @@ angular.module('treeTaskApp', ['ui.router', 'cy.util'])
 // </editor-fold>
 
 // <editor-fold description="cy.util module">
+var CyOnActiveStateDirective = function ($rootScope, $state) {
+    return {
+        restrict: 'A',
+        link: function (scope, elem, attrs) {
+            var onChangeState = function () {
+                if ($state.includes(attrs.cyActiveOnState)) {
+                    $(elem).addClass('active');
+                } else {
+                    $(elem).removeClass('active');
+                }
+            };
+            onChangeState();
+            $rootScope.$on('$stateChangeSuccess', onChangeState);
+        }
+    };
+};
+// </editor-fold>
+
+// <editor-fold description="cy.util module">
 angular.module('cy.util', [])
-    .directive('cyActiveOnState', function ($rootScope, $state) {
-        return {
-            restrict: 'A',
-            link: function (scope, elem, attrs) {
-                var changeState = function () {
-                    if ($state.includes(attrs.cyActiveOnState)) {
-                        $(elem).addClass('active');
-                    } else {
-                        $(elem).removeClass('active');
-                    }
-                };
-                changeState();
-                $rootScope.$on('$stateChangeSuccess', changeState);
-            }
-        };
-    })
+    .directive('cyActiveOnState', CyOnActiveStateDirective)
     .service('clipService', ClipService);
 // </editor-fold>
