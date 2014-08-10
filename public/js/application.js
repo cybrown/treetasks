@@ -5,26 +5,26 @@ var TaskBaseController = function (taskService) {
     this.refreshData();
 };
 
-TaskBaseController.prototype.setDone = function (task) {
-    this.taskService.setDone(task.id);
+TaskBaseController.prototype.setDone = function (taskId) {
+    this.taskService.setDone(taskId);
     this.refreshData();
 };
 
-TaskBaseController.prototype.setUndone = function (task) {
-    this.taskService.setUndone(task.id);
+TaskBaseController.prototype.setUndone = function (taskId) {
+    this.taskService.setUndone(taskId);
     this.refreshData();
 };
 
-TaskBaseController.prototype.create = function (parentTaskId, description) {
+TaskBaseController.prototype.create = function (taskId, description) {
     var _this = this;
-    this.taskService.create(parentTaskId, description).then(function () {
+    this.taskService.create(taskId, description).then(function () {
         _this.refreshData();
     });
 };
 
-TaskBaseController.prototype.delete = function (task) {
+TaskBaseController.prototype.delete = function (taskId) {
     var _this = this;
-    this.taskService.delete(task.id).then(function () {
+    this.taskService.delete(taskId).then(function () {
         _this.refreshData();
     });
 };
@@ -45,28 +45,9 @@ TaskAllController.prototype.refreshData = function () {
         });
     });
 };
-// </editor-fold>
 
-// <editor-fold description="TaskDetailListController">
-var TaskDetailListController = function (taskService, $stateParams) {
-    this.taskId = $stateParams.id;
-    this.task = null;
-    this.defaultParentTaskId = this.taskId;
-    TaskBaseController.call(this, taskService);
-};
-TaskDetailListController.prototype = Object.create(TaskBaseController.prototype);
-
-TaskDetailListController.prototype.refreshData = function () {
-    var _this = this;
-    this.taskService.findById(this.taskId).then(function (task) {
-        _this.task = task;
-    });
-    this.taskService.findByParentId(this.taskId).then(function (tasks) {
-        _this.tasks.length = 0;
-        tasks.forEach(function (task) {
-            _this.tasks.push(task);
-        });
-    });
+TaskAllController.prototype.findTasks = function () {
+    return this.tasks;
 };
 // </editor-fold>
 
@@ -85,15 +66,37 @@ TaskTodoController.prototype.refreshData = function () {
         });
     });
 };
+
+TaskTodoController.prototype.findTasks = function () {
+    return this.tasks;
+};
 // </editor-fold>
 
 // <editor-fold description="TaskDetailsController">
 var TaskDetailsController = function (taskService, $stateParams) {
+    this.taskId = $stateParams.id;
+    this.task = null;
+    this.defaultParentTaskId = this.taskId;
+    this.tasks = [];
+    TaskBaseController.call(this, taskService);
+};
+TaskDetailsController.prototype = Object.create(TaskBaseController.prototype);
+
+TaskDetailsController.prototype.refreshData = function () {
     var _this = this;
-    this.taskService = taskService;
-    taskService.findById($stateParams.id).then(function (task) {
+    this.taskService.findById(this.taskId).then(function (task) {
         _this.task = task;
     });
+    this.taskService.findByParentId(this.taskId).then(function (tasks) {
+        _this.tasks.length = 0;
+        tasks.forEach(function (task) {
+            _this.tasks.push(task);
+        });
+    });
+};
+
+TaskDetailsController.prototype.findTasks = function () {
+    return this.tasks;
 };
 // </editor-fold>
 
@@ -155,6 +158,22 @@ TaskService.prototype.delete = function (taskId) {
 };
 // </editor-fold>
 
+// <editor-fold description="TaskSearchController">
+var TaskSearchController = function (taskService) {
+    this.taskService = taskService;
+};
+
+TaskSearchController.prototype.findAll = function () {
+    return this.taskService.findAll();
+};
+
+TaskSearchController.prototype.search = function () {
+    this.taskService.search(this.searchTerm).then(function () {
+
+    })
+};
+// </editor-fold>
+
 // <editor-fold description="treeTaskApp module">
 angular.module('treeTaskApp', ['ui.router', 'cy'])
     .config(function ($stateProvider, $urlRouterProvider) {
@@ -176,13 +195,13 @@ angular.module('treeTaskApp', ['ui.router', 'cy'])
             })
             .state('tasks.todo', {
                 url: '/',
-                templateUrl: 'views/tasks/list.html',
+                templateUrl: 'views/tasks/todo.html',
                 controller: TaskTodoController,
                 controllerAs: 'ctrl'
             })
             .state('tasks.all', {
                 url: '/all',
-                templateUrl: 'views/tasks/list.html',
+                templateUrl: 'views/tasks/all.html',
                 controller: TaskAllController,
                 controllerAs: 'ctrl'
             })
@@ -190,13 +209,12 @@ angular.module('treeTaskApp', ['ui.router', 'cy'])
                 url: '/details/:id',
                 templateUrl: 'views/tasks/details.html',
                 controller: TaskDetailsController,
-                controllerAs: 'ctrl',
-                abstract: true
+                controllerAs: 'ctrl'
             })
-            .state('tasks.details.list', {
-                url: '/',
-                templateUrl: 'views/tasks/list.html',
-                controller: TaskDetailListController,
+            .state('tasks.search', {
+                url: '/search',
+                templateUrl: 'views/tasks/search.html',
+                controller: TaskSearchController,
                 controllerAs: 'ctrl'
             });
     })
@@ -206,7 +224,28 @@ angular.module('treeTaskApp', ['ui.router', 'cy'])
         });
     })
     .service('taskService', TaskService)
-    .constant('BASE_URL', '/api/');
+    .constant('BASE_URL', '/api/')
+    .directive('taskList', function (taskService) {
+        return {
+            restrict: 'E',
+            scope: {
+                showNew: '@',
+                tasks: '=',
+                create: '&',
+                delete: '&',
+                setDone: '&',
+                setUndone: '&',
+                currentTaskId: '@'
+            },
+            templateUrl: 'views/directives/task-list.html',
+            link: function (scope, elem, attrs) {
+                scope.showNew = JSON.parse(scope.showNew);
+                if (scope.currentTaskId) {
+                    scope.currentTaskId = Number(scope.currentTaskId);
+                }
+            }
+        }
+    });
 // </editor-fold>
 
 // <editor-fold description="cy module">

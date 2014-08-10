@@ -1,3 +1,11 @@
 <a ng-if="ctrl.task.parentId" class="btn btn-default" ui-sref="tasks.details.list({id: ctrl.task.parentId})">Parent</a>
 <div class="well">{{ctrl.task.description}}</div>
-<div ui-view></div>
+<task-list
+    show-new="true"
+    tasks="ctrl.findTasks()"
+    create="ctrl.create(taskId, description)"
+    delete="ctrl.delete(taskId)"
+    set-done="ctrl.setDone(taskId)"
+    set-undone="ctrl.setUndone(taskId)"
+    current-task-id="ctrl.task.id">
+</task-list>
