@@ -2,7 +2,7 @@
     <li class="task list-group-item">
         <form ng-submit="ctrl.search()">
             <div class="form-inline input-group">
-                <input class="form-control" type="text" ng-model="description"/>
+                <input class="form-control" type="text" ng-model="ctrl.searchTerm"/>
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
                 </span>
@@ -12,5 +12,5 @@
 </ul>
 <task-list
    show-new="false"
-   get-content="ctrl.findAll()">
+   tasks="ctrl.findTasks()">
 </task-list>

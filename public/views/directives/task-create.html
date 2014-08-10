@@ -1,0 +1,12 @@
+<ul class="list-group">
+    <li class="task list-group-item">
+        <form ng-submit="create({parentId: 0, description: description}); description = ''">
+            <div class="form-inline input-group">
+                <input class="form-control" type="text" ng-model="description"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                </span>
+            </div>
+        </form>
+    </li>
+</ul>
