@@ -1,11 +1,9 @@
 <ul class="list-group">
-    <li class="task list-group-item clearfix" ng-repeat="task in tasks">
+    <li hm-hold="cut(task)" hm-swipe-right="setDone(task, true)" hm-swipe-left="setDone(task, false)" class="task list-group-item clearfix" ng-repeat="task in tasks">
         <div ng-show="!showCreate">
             <span class="task-description" ng-class="{'done': task.done}">{{task.description}}</span>
             <div class="btn-group pull-right">
                 <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default"><span class="glyphicon glyphicon-eye-open"></span></button>
-                <button ng-show="!task.done" type="button" class="btn btn-default" ng-click="setDone(task, true)"><span class="glyphicon glyphicon-check"></span></button>
-                <button ng-show="task.done" type="button" class="btn btn-default" ng-click="setDone(task, false)"><span class="glyphicon glyphicon-check"></span></button>
                 <button type="button" class="btn btn-default" ng-click="remove(task)"><span class="glyphicon glyphicon-trash"></span></button>
                 <button ng-show="showCutBtn(task)" type="button" class="btn btn-default" ng-click="cut(task)"><span class="glyphicon glyphicon-transfer"></span></button>
                 <button ng-show="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>
