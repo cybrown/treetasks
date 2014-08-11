@@ -312,7 +312,7 @@ var ROUTES = [{
 // </editor-fold>
 
 // <editor-fold description="treeTaskApp module">
-angular.module('treeTaskApp', ['ui.router', 'cy.util'])
+angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskBaseController', TaskBaseController)
     .controller('TaskAllController', TaskAllController)
     .controller('TaskTodoController', TaskTodoController)
