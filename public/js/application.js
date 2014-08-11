@@ -83,12 +83,7 @@ TaskDetailsController.prototype.refreshData = function () {
     var _this = this;
     this.taskService.findById(this.taskId).then(function (task) {
         _this.task = task;
-    });
-    this.taskService.findByParentId(this.taskId).then(function (tasks) {
-        _this.tasks.length = 0;
-        tasks.forEach(function (task) {
-            _this.tasks.push(task);
-        });
+        _this.tasks = _this.task.children;
     });
 };
 
@@ -117,55 +112,111 @@ TaskSearchController.prototype.findTasks = function () {
 // </editor-fold>
 
 // <editor-fold description="TaskService">
-var TaskService = function ($http, BASE_URL) {
+var TaskService = function ($http, BASE_URL, $q, syncService) {
     this.$http = $http;
     this.BASE_URL = BASE_URL;
+    this.syncService = syncService;
+    this._tasksLoaded = false;
+    this._tasks = {};
+    this.$q = $q;
+};
+
+TaskService.prototype._fetchAll = function (revision) {
+    var _this = this;
+    return this.$http.get(this.BASE_URL).then(function (response) {
+        var tasks = response.data;
+        var dict = {};
+
+        // Create a dict of hashes, and populating primitive properties of tasks
+        tasks.forEach(function (hash) {
+            dict[hash.id] = dict;
+            _this._tasks[hash.id] = {
+                id: hash.id,
+                description: hash.description,
+                parent: null,
+                children: []
+            };
+        });
+
+        // Populating complex properties of tasks
+        Object.keys(_this._tasks).forEach(function (key) {
+            var parentId = dict[key].parentId;
+            if (parentId) {
+                _this._tasks[key].parent = _this._tasks[parentId];
+                _this._tasks[parentId].children.push(_this._tasks[key]);
+            }
+        });
+
+        _this._tasksLoaded = true;
+    });
+};
+
+TaskService.prototype._fetchIfNotLoaded = function () {
+    if (this._tasksLoaded) {
+        return this.$q.when(true);
+    } else {
+        return this._fetchAll(0);
+    }
 };
 
 TaskService.prototype.findAll = function () {
-    return this.$http.get(this.BASE_URL).then(function (response) {
-        return response.data;
+    var _this = this;
+    return this._fetchIfNotLoaded().then(function () {
+        return  Object.keys(_this._tasks).map(function (key) {
+            return _this._tasks[key];
+        });
     });
 };
 
 TaskService.prototype.findDoable = function () {
-    return this.$http.get(this.BASE_URL + 'doable').then(function (response) {
-        return response.data;
-    });
-};
-
-TaskService.prototype.findByParentId = function (taskId) {
-    return this.$http.get(this.BASE_URL + 'children/' + taskId).then(function (response) {
-        return response.data;
+    var _this = this;
+    return this._fetchIfNotLoaded().then(function () {
+        return  Object.keys(_this._tasks).map(function (key) {
+            return _this._tasks[key];
+        }).filter(function (task) {
+            return !task.done && (task.children.filter(function (task) {
+                return !task.done;
+            }).length === 0);
+        });
     });
 };
 
 TaskService.prototype.findById = function (taskId) {
-    return this.$http.get(this.BASE_URL + taskId).then(function (response) {
-        return response.data;
+    var _this = this;
+    return this._fetchIfNotLoaded().then(function () {
+        return _this._tasks[taskId];
     });
 };
 
 TaskService.prototype.findBySearch = function (searchTerm) {
-    return this.$http.get(this.BASE_URL + 'search', {
-        params: {
-            q: searchTerm
-        }
-    }).then(function (response) {
-        return response.data;
+    var _this = this;
+    return this._fetchIfNotLoaded().then(function () {
+        return  Object.keys(_this._tasks).map(function (key) {
+            return _this._tasks[key];
+        }).filter(function (task) {
+            return task.description.indexOf(searchTerm) !== -1;
+        });
     });
 };
 
 TaskService.prototype.save = function (task) {
-    return this.$http.post(this.BASE_URL + task.id, task);
+    this.syncService.update(task);
+    return this.$q.when(true);
+    //return this.$http.post(this.BASE_URL + task.id, task);
 };
 
 TaskService.prototype.create = function (task) {
-    return this.$http.put(this.BASE_URL, task);
+    return this.$q.when(true);
+    //return this.$http.put(this.BASE_URL, task);
 };
 
-TaskService.prototype.delete = function (taskId) {
-    return this.$http.delete(this.BASE_URL + taskId);
+TaskService.prototype.delete = function (task) {
+    if (task.parent) {
+        task.parent.children.splice(task.parent.children.indexOf(task), 1);
+    }
+    delete this._tasks[task.id];
+    return this.$q.when(true);
+    //return this.$http.delete(this.BASE_URL + taskId);
 };
 // </editor-fold>
 
@@ -225,17 +276,6 @@ var TaskListDirective = function (taskService, clipService) {
         },
         templateUrl: 'views/directives/task-list.html',
         link: function (scope, elem, attrs) {
-            scope.cut = function (task) {
-                clipService.setData(task, 'task');
-            };
-            scope.paste = function (parentTask) {
-                if (clipService.hasData('task')) {
-                    var task = clipService.getData();
-                    task.parentId = parentTask.id;
-                    clipService.clear();
-                    scope.onSave({task: task});
-                }
-            };
             scope.showReleaseBtn = function (task) {
                 if (clipService.hasData('task')) {
                     return clipService.getData().id === task.id;
@@ -251,20 +291,38 @@ var TaskListDirective = function (taskService, clipService) {
             scope.showCutBtn = function (task) {
                 return !clipService.hasData('task');
             };
+
+            scope.cut = function (task) {
+                clipService.setData(task, 'task');
+            };
+
             scope.setDone = function (task, done) {
                 task.done = done;
-                scope.onSave({task: task});
+                taskService.save(task);
             };
             scope.create = function (task) {
-                scope.onCreate({task: task});
             };
             scope.remove = function (task) {
-                scope.onDelete({task: task});
+                taskService.remove(task);
+            };
+            scope.paste = function (parentTask) {
+                if (clipService.hasData('task')) {
+                    var task = clipService.getData();
+                    if (task.parent) {
+                        task.parent.children.splice(task.parent.children.indexOf(task), 1);
+                    }
+                    task.parent = parentTask;
+                    parentTask.children.push(task);
+                    clipService.clear();
+                    taskService.save(task);
+                }
             };
             scope.release = function (task) {
-                task.parentId = 0;
+                if (task.parent) {
+                    task.parent.children.splice(task.parent.children.indexOf(task), 1);
+                }
+                task.parent = null;
                 clipService.clear();
-                scope.onSave({task: task});
             };
         }
     }
@@ -313,6 +371,53 @@ var ROUTES = [{
 }];
 // </editor-fold>
 
+// <editor-fold description="SyncService">
+var SyncService = function (BASE_URL, $http) {
+    this.BASE_URL = BASE_URL;
+    this.$http = $http;
+    this.toUpdate = [];
+    this.toCreate = [];
+    this.toRemove = [];
+};
+
+SyncService.prototype.update = function (task) {
+    if (this.toUpdate.indexOf(task) === -1) {
+        this.toUpdate.push(task);
+    }
+};
+
+SyncService.prototype.create = function (task) {
+    if (this.toCreate.indexOf(task) === -1) {
+        this.toCreate.push(task);
+    }
+};
+
+SyncService.prototype.remove = function (task) {
+    if (this.toRemove.indexOf(task) === -1) {
+        this.toRemove.push(task);
+    }
+};
+
+SyncService.prototype.sync = function () {
+    var _this = this;
+    this.toUpdate.map(function (task) {
+        var hash = {
+            id: task.id,
+            description: task.description,
+            done: task.done,
+            parentId: task.parent != null ? task.parent.id :0
+        };
+        return _this.$http.post(_this.BASE_URL + hash.id, hash);
+    });
+};
+// </editor-fold>
+
+var SyncController = function ($scope, syncService) {
+    $scope.sync = function () {
+        syncService.sync();
+    };
+};
+
 // <editor-fold description="treeTaskApp module">
 angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskBaseController', TaskBaseController)
@@ -320,8 +425,10 @@ angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskTodoController', TaskTodoController)
     .controller('TaskDetailsController', TaskDetailsController)
     .controller('TaskSearchController', TaskSearchController)
+    .controller('SyncController', SyncController)
     .constant('ROUTES', ROUTES)
     .service('taskService', TaskService)
+    .service('syncService', SyncService)
     .constant('BASE_URL', '/api/tasks/')
     .directive('taskList', TaskListDirective)
     .directive('taskCreate', TaskCreateDirective)
