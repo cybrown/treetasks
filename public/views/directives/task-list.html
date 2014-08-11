@@ -3,11 +3,10 @@
         <div ng-show="!showCreate">
             <span class="task-description" ng-class="{'done': task.done}">{{task.description}}</span>
             <div class="btn-group pull-right">
+                <button ng-if="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>
+                <button ng-if="showPasteBtn(task)" type="button" class="btn btn-default" ng-click="paste(task)"><span class="glyphicon glyphicon-arrow-down"></span></button>
                 <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default"><span class="glyphicon glyphicon-eye-open"></span></button>
                 <button type="button" class="btn btn-default" ng-click="remove(task)"><span class="glyphicon glyphicon-trash"></span></button>
-                <button ng-show="showCutBtn(task)" type="button" class="btn btn-default" ng-click="cut(task)"><span class="glyphicon glyphicon-transfer"></span></button>
-                <button ng-show="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>
-                <button ng-show="showPasteBtn(task)" type="button" class="btn btn-default" ng-click="paste(task)"><span class="glyphicon glyphicon-arrow-down"></span></button>
                 <button type="button" class="btn btn-default" ng-click="showCreate = true"><span class="glyphicon glyphicon-plus"></span></button>
             </div>
         </div>
