@@ -1,6 +1,5 @@
 CACHE MANIFEST
 # 1407758127
-index.html
 components/angular-gestures/gestures.min.js
 components/angular-ui-router/release/angular-ui-router.min.js
 components/angular/angular.min.js
@@ -9,12 +8,15 @@ components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff
 components/bootstrap/dist/js/bootstrap.min.js
 components/jquery/dist/jquery.min.js
 css/style.css
+index.html
 js/application.js
 views/common/layout.html
 views/common/uiview.html
 views/directives/task-create.html
 views/directives/task-list.html
 views/tasks/all.html
+views/tasks/search.html
+views/tasks/todo.html
 
 NETWORK:
 *
