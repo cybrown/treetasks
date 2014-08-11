@@ -199,10 +199,12 @@ var TaskCreateDirective = function (taskService) {
     return {
         restrict: 'E',
         scope: {
-            onCreate: '&'
+            onCreate: '&',
+            parentId: '@'
         },
         templateUrl: 'views/directives/task-create.html',
         link: function (scope, elem, attrs) {
+            scope.parentId = Number(scope.parentId);
             scope.create = function (task) {
                 scope.onCreate({task: task});
             };
