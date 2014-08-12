@@ -295,6 +295,7 @@ var ROUTES = [{
 
 // <editor-fold description="SyncService">
 var SyncService = function (BASE_URL, $http, $q, $rootScope) {
+    var _this = this;
     this.BASE_URL = BASE_URL;
     this.$http = $http;
     this.$q = $q;
@@ -305,6 +306,9 @@ var SyncService = function (BASE_URL, $http, $q, $rootScope) {
     this.toCreate = [];
     this.toRemove = [];
     this.id = 0;
+    $rootScope.$on('tasks.change', function () {
+        localStorage.setItem('tasks', JSON.stringify(serializeTasks(_this.tasks)));
+    });
 };
 
 SyncService.prototype.update = function (task) {
@@ -368,37 +372,58 @@ SyncService.prototype.push = function () {
     });
 };
 
+var serializeTasks = function (tasks) {
+    return tasks.map(function (task) {
+        return {
+            id: task.id,
+            parentId: task.parent ? task.parent.id : 0,
+            description: task.description,
+            done: task.done
+        }
+    });
+};
+
+var deserializeTasks = function (taskObj, rawTaskData) {
+    var responseHash = rawTaskData;
+    var hashDict = {};
+    var objDict = {};
+
+    // Create a dict of hashes, and populating primitive properties of tasks
+    // Create a dict of objects
+    responseHash.forEach(function (hash) {
+        hashDict[hash.id] = hash;
+        objDict[hash.id] = {
+            id: hash.id,
+            description: hash.description,
+            parent: null,
+            done: hash.done,
+            children: []
+        };
+    });
+
+    // Populating complex properties of objects
+    Object.keys(objDict).forEach(function (key) {
+        var parentId = hashDict[key].parentId;
+        if (parentId) {
+            objDict[key].parent = objDict[parentId];
+            objDict[parentId].children.push(objDict[key]);
+        }
+        taskObj.push(objDict[key]);
+    });
+};
+
 SyncService.prototype.pull = function () {
     var _this = this;
     this.pulling = true;
     return this.$http.get(this.BASE_URL).then(function (response) {
-        var responseHash = response.data;
-        var hashDict = {};
-        var objDict = {};
         _this.tasks.length = 0;
-
-        // Create a dict of hashes, and populating primitive properties of tasks
-        // Create a dict of objects
-        responseHash.forEach(function (hash) {
-            hashDict[hash.id] = hash;
-            objDict[hash.id] = {
-                id: hash.id,
-                description: hash.description,
-                parent: null,
-                done: hash.done,
-                children: []
-            };
-        });
-
-        // Populating complex properties of objects
-        Object.keys(objDict).forEach(function (key) {
-            var parentId = hashDict[key].parentId;
-            if (parentId) {
-                objDict[key].parent = objDict[parentId];
-                objDict[parentId].children.push(objDict[key]);
-            }
-            _this.tasks.push(objDict[key]);
-        });
+        deserializeTasks(_this.tasks, response.data);
+        _this.pulling = false;
+        _this.$rootScope.$broadcast('tasks.change');
+    }).catch(function (err) {
+        var rawTasks = JSON.parse(localStorage.getItem('tasks'));
+        _this.tasks.length = 0;
+        deserializeTasks(_this.tasks, rawTasks);
         _this.pulling = false;
         _this.$rootScope.$broadcast('tasks.change');
     });
@@ -434,6 +459,8 @@ angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
         ROUTES.forEach(function (route) {
             $stateProvider.state(route.name, route);
         });
+    }).run(function (syncService) {
+        syncService.pull();
     });
 // </editor-fold>
 
