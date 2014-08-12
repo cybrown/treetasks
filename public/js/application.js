@@ -159,7 +159,7 @@ var TaskCreateDirective = function (taskService) {
         templateUrl: 'views/directives/task-create.html',
         link: function (scope, elem, attrs) {
             scope.parent = taskService.findById(Number(scope.parentId));
-            scope.create = function (parent, description) {
+            scope.create = function () {
                 var task = {
                     parent: scope.parent,
                     description: scope.description,
@@ -167,7 +167,9 @@ var TaskCreateDirective = function (taskService) {
                     children: []
                 };
                 scope.description = '';
-                scope.parent.children.push(task);
+                if (scope.parent) {
+                    scope.parent.children.push(task);
+                }
                 scope.onCreate({task: task});
             };
         }
