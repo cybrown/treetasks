@@ -1,4 +1,4 @@
-<a ng-if="ctrl.task.parentId" class="btn btn-default" ui-sref="tasks.details({id: ctrl.task.parentId})">Parent</a>
+<a ng-if="ctrl.task.parent" class="btn btn-default" ui-sref="tasks.details({id: ctrl.task.parent.id})">Parent</a>
 <div class="well">{{ctrl.task.description}}</div>
 <task-create
 	on-create="ctrl.create(task)"

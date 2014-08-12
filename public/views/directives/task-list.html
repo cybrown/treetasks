@@ -5,12 +5,12 @@
             <div class="btn-group pull-right">
                 <button ng-if="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>
                 <button ng-if="showPasteBtn(task)" type="button" class="btn btn-default" ng-click="paste(task)"><span class="glyphicon glyphicon-arrow-down"></span></button>
-                <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default"><span class="glyphicon" ng-class="{'glyphicon-eye-open': task.parentId != 0,'glyphicon-eye-close': task.parentId == 0}"></span></button>
+                <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default"><span class="glyphicon" ng-class="{'glyphicon-eye-open': task.parent != null,'glyphicon-eye-close': task.parent == null}"></span></button>
                 <button type="button" class="btn btn-default" ng-click="remove(task)"><span class="glyphicon glyphicon-trash"></span></button>
                 <button type="button" class="btn btn-default" ng-click="showCreate = true"><span class="glyphicon glyphicon-plus"></span></button>
             </div>
         </div>
-        <form ng-show="showCreate" ng-submit="create({parentId: task.id, description: description})">
+        <form ng-show="showCreate" ng-submit="create(task, description); description = '';">
             <div class="form-inline input-group">
                 <div class="input-group-addon" ng-click="showCreate = false">
                     <span class="glyphicon glyphicon-backward"></span>
