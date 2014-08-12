@@ -2,28 +2,18 @@
 var TaskBaseController = function (taskService) {
     this.taskService = taskService;
     this.tasks = [];
-    this.refreshData();
 };
 
 TaskBaseController.prototype.save = function (task) {
-    var _this = this;
-    this.taskService.save(task).then(function () {
-        _this.refreshData();
-    });
+    this.taskService.save(task);
 };
 
 TaskBaseController.prototype.create = function (task) {
-    var _this = this;
-    this.taskService.create(task).then(function () {
-        _this.refreshData();
-    });
+    this.taskService.create(task);
 };
 
 TaskBaseController.prototype.delete = function (task) {
-    var _this = this;
-    this.taskService.delete(task.id).then(function () {
-        _this.refreshData();
-    });
+    this.taskService.delete(task.id);
 };
 // </editor-fold>
 
@@ -33,17 +23,12 @@ var TaskAllController = function (taskService) {
 };
 TaskAllController.prototype = Object.create(TaskBaseController.prototype);
 
-TaskAllController.prototype.refreshData = function () {
+TaskAllController.prototype.findTasks = function () {
     var _this = this;
     this.taskService.findAll().then(function (tasks) {
-        _this.tasks.length = 0;
-        tasks.forEach(function (task) {
-            _this.tasks.push(task);
-        });
+        //_this.tasks.length = 0;
+        //[].push.apply(_this.tasks, tasks);
     });
-};
-
-TaskAllController.prototype.findTasks = function () {
     return this.tasks;
 };
 // </editor-fold>
@@ -53,16 +38,6 @@ TaskTodoController = function (taskService) {
     TaskBaseController.call(this, taskService);
 };
 TaskTodoController.prototype = Object.create(TaskBaseController.prototype);
-
-TaskTodoController.prototype.refreshData = function () {
-    var _this = this;
-    this.taskService.findDoable().then(function (tasks) {
-        _this.tasks.length = 0;
-        tasks.forEach(function (task) {
-            _this.tasks.push(task);
-        });
-    });
-};
 
 TaskTodoController.prototype.findTasks = function () {
     return this.tasks;
@@ -74,18 +49,9 @@ var TaskDetailsController = function (taskService, $stateParams) {
     this.taskId = $stateParams.id;
     this.task = null;
     this.defaultParentTaskId = this.taskId;
-    this.tasks = [];
     TaskBaseController.call(this, taskService);
 };
 TaskDetailsController.prototype = Object.create(TaskBaseController.prototype);
-
-TaskDetailsController.prototype.refreshData = function () {
-    var _this = this;
-    this.taskService.findById(this.taskId).then(function (task) {
-        _this.task = task;
-        _this.tasks = _this.task.children;
-    });
-};
 
 TaskDetailsController.prototype.findTasks = function () {
     return this.tasks;
@@ -117,38 +83,46 @@ var TaskService = function ($http, BASE_URL, $q, syncService) {
     this.BASE_URL = BASE_URL;
     this.syncService = syncService;
     this._tasksLoaded = false;
-    this._tasks = {};
+    this._tasks = [];
+    this._taskProm = null;
     this.$q = $q;
 };
 
 TaskService.prototype._fetchAll = function (revision) {
     var _this = this;
-    return this.$http.get(this.BASE_URL).then(function (response) {
-        var tasks = response.data;
-        var dict = {};
 
-        // Create a dict of hashes, and populating primitive properties of tasks
-        tasks.forEach(function (hash) {
-            dict[hash.id] = dict;
-            _this._tasks[hash.id] = {
-                id: hash.id,
-                description: hash.description,
-                parent: null,
-                children: []
-            };
-        });
+    if (this._taskProm === null) {
+		this._taskProm = this.$http.get(this.BASE_URL).then(function (response) {
+	        var tasks = response.data;
+	        var hashDict = {};
+	        var taskDict = {};
+	        _this._tasks.length = 0;
 
-        // Populating complex properties of tasks
-        Object.keys(_this._tasks).forEach(function (key) {
-            var parentId = dict[key].parentId;
-            if (parentId) {
-                _this._tasks[key].parent = _this._tasks[parentId];
-                _this._tasks[parentId].children.push(_this._tasks[key]);
-            }
-        });
+	        // Create a dict of hashes, and populating primitive properties of tasks
+	        tasks.forEach(function (hash) {
+	            hashDict[hash.id] = hash;
+	            taskDict[hash.id] = {
+	                id: hash.id,
+	                description: hash.description,
+	                parent: null,
+	                children: []
+	            };
+	        });
 
-        _this._tasksLoaded = true;
-    });
+	        // Populating complex properties of tasks
+	        Object.keys(taskDict).forEach(function (key) {
+	            var parentId = hashDict[key].parentId;
+	            if (parentId) {
+	                taskDict[key].parent = taskDict[parentId];
+	                taskDict[parentId].children.push(taskDict[key]);
+	            }
+	            _this._tasks.push(taskDict[key]);
+	        });
+
+	        _this._tasksLoaded = true;
+	    });
+    }
+    return this._taskProm;
 };
 
 TaskService.prototype._fetchIfNotLoaded = function () {
@@ -162,18 +136,13 @@ TaskService.prototype._fetchIfNotLoaded = function () {
 TaskService.prototype.findAll = function () {
     var _this = this;
     return this._fetchIfNotLoaded().then(function () {
-        return  Object.keys(_this._tasks).map(function (key) {
-            return _this._tasks[key];
-        });
+        return _this._tasks;
     });
 };
 
 TaskService.prototype.findDoable = function () {
-    var _this = this;
-    return this._fetchIfNotLoaded().then(function () {
-        return  Object.keys(_this._tasks).map(function (key) {
-            return _this._tasks[key];
-        }).filter(function (task) {
+    return this.findAll().then(function (tasks) {
+        return tasks.filter(function (task) {
             return !task.done && (task.children.filter(function (task) {
                 return !task.done;
             }).length === 0);
@@ -182,18 +151,17 @@ TaskService.prototype.findDoable = function () {
 };
 
 TaskService.prototype.findById = function (taskId) {
-    var _this = this;
-    return this._fetchIfNotLoaded().then(function () {
-        return _this._tasks[taskId];
+    return this.findAll().then(function (tasks) {
+        var res = tasks.filter(function (task) {
+            return task.id === taskId;
+        });
+        return res.length ? res[0] : null;
     });
 };
 
 TaskService.prototype.findBySearch = function (searchTerm) {
-    var _this = this;
-    return this._fetchIfNotLoaded().then(function () {
-        return  Object.keys(_this._tasks).map(function (key) {
-            return _this._tasks[key];
-        }).filter(function (task) {
+    return this.findAll().then(function (tasks) {
+        return tasks.filter(function (task) {
             return task.description.indexOf(searchTerm) !== -1;
         });
     });
@@ -202,21 +170,21 @@ TaskService.prototype.findBySearch = function (searchTerm) {
 TaskService.prototype.save = function (task) {
     this.syncService.update(task);
     return this.$q.when(true);
-    //return this.$http.post(this.BASE_URL + task.id, task);
 };
 
 TaskService.prototype.create = function (task) {
+    this._tasks.push(task);
+    this.syncService.create(task);
     return this.$q.when(true);
-    //return this.$http.put(this.BASE_URL, task);
 };
 
 TaskService.prototype.delete = function (task) {
     if (task.parent) {
         task.parent.children.splice(task.parent.children.indexOf(task), 1);
     }
-    delete this._tasks[task.id];
+    this._tasks.splice(this._tasks.indexOf(task), 1);
+    this.syncService.remove(task);
     return this.$q.when(true);
-    //return this.$http.delete(this.BASE_URL + taskId);
 };
 // </editor-fold>
 
@@ -256,7 +224,13 @@ var TaskCreateDirective = function (taskService) {
         templateUrl: 'views/directives/task-create.html',
         link: function (scope, elem, attrs) {
             scope.parentId = Number(scope.parentId);
-            scope.create = function (task) {
+            scope.create = function (parent, description) {
+                var task = {
+                    parent: parent,
+                    description: description,
+                    done: false,
+                    children: []
+                };
                 scope.onCreate({task: task});
             };
         }
@@ -300,10 +274,20 @@ var TaskListDirective = function (taskService, clipService) {
                 task.done = done;
                 taskService.save(task);
             };
-            scope.create = function (task) {
+            scope.create = function (parent, description) {
+                var task = {
+                    parent: parent,
+                    description: description,
+                    done: false,
+                    children: []
+                };
+                if (parent) {
+                    parent.children.push(task);
+                }
+                taskService.save(task);
             };
             scope.remove = function (task) {
-                taskService.remove(task);
+                scope.onDelete({task: task});
             };
             scope.paste = function (parentTask) {
                 if (clipService.hasData('task')) {
@@ -372,9 +356,10 @@ var ROUTES = [{
 // </editor-fold>
 
 // <editor-fold description="SyncService">
-var SyncService = function (BASE_URL, $http) {
+var SyncService = function (BASE_URL, $http, $q) {
     this.BASE_URL = BASE_URL;
     this.$http = $http;
+    this.$q = $q;
     this.toUpdate = [];
     this.toCreate = [];
     this.toRemove = [];
@@ -398,16 +383,30 @@ SyncService.prototype.remove = function (task) {
     }
 };
 
+var taskToHash = function (task) {
+    return {
+        id: task.id || 0,
+        description: task.description,
+        done: task.done,
+        parentId: task.parent != null ? task.parent.id :0
+    };
+};
+
 SyncService.prototype.sync = function () {
     var _this = this;
-    this.toUpdate.map(function (task) {
-        var hash = {
-            id: task.id,
-            description: task.description,
-            done: task.done,
-            parentId: task.parent != null ? task.parent.id :0
-        };
-        return _this.$http.post(_this.BASE_URL + hash.id, hash);
+    var u = this.toUpdate.map(function (task) {
+        return _this.$http.post(_this.BASE_URL + task.id, taskToHash(task));
+    });
+    var d = this.toRemove.map(function (task) {
+        return _this.$http.delete(_this.BASE_URL + task.id);
+    });
+    var c = this.toCreate.map(function (task) {
+        return _this.$http.put(_this.BASE_URL, taskToHash(task));
+    });
+    return this.$q.all(u.concat(d).concat(c)).then(function () {
+        _this.toUpdate.length = 0;
+        _this.toRemove.length = 0;
+        _this.toCreate.length = 0;
     });
 };
 // </editor-fold>
