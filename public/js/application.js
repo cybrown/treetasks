@@ -290,24 +290,28 @@ var ROUTES = [{
 }];
 // </editor-fold>
 
-var CSet = function () {
-    console.log('cset');
+var ArraySet = function () {
     Set.apply(this, arguments);
     this._array = null;
 };
-CSet.prototype = Object.create(Set.prototype);
+ArraySet.prototype = Object.create(Set.prototype);
 
-CSet.prototype.add = function () {
+ArraySet.prototype.add = function () {
     this._array = null;
     return Set.prototype.add.apply(this, arguments);
 };
 
-CSet.prototype.delete = function () {
+ArraySet.prototype.clear = function () {
+    this._array = null;
+    return Set.prototype.clear.apply(this, arguments);
+};
+
+ArraySet.prototype.delete = function () {
     this._array = null;
     return Set.prototype.delete.apply(this, arguments);
 };
 
-CSet.prototype.toArray = function () {
+ArraySet.prototype.toArray = function () {
     if (!this._array) {
         this._array = [];
         var i = this._es6shim_iterator_();
@@ -328,7 +332,7 @@ var Task = function () {
     this.description = '';
     this.done = false;
     this.parent = null;
-    this.children = new CSet();
+    this.children = new ArraySet();
 };
 
 // <editor-fold description="SyncService">
