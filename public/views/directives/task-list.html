@@ -1,7 +1,11 @@
 <ul class="list-group">
     <li hm-hold="cut(task)" hm-swipe-right="setDone(task, true)" hm-swipe-left="setDone(task, false)" class="task list-group-item clearfix" ng-repeat="task in tasks">
         <div ng-show="!showCreate">
-            <span class="task-description" ng-class="{'done': task.done}">{{task.description}}</span>
+            <span class="task-description" ng-class="{'done': task.done}">
+                <span>({{task._syncStatus}})</span>
+                <span>{{task.description}}</span>
+                <span ng-if="!hideParent && task.parent !== null">-> {{task.parent.description}}</span>
+            </span>
             <div class="btn-group pull-right">
                 <button ng-if="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>
                 <button ng-if="showPasteBtn(task)" type="button" class="btn btn-default" ng-click="paste(task)"><span class="glyphicon glyphicon-arrow-down"></span></button>
