@@ -359,6 +359,8 @@ var SyncService = function (BASE_URL, $http, $q, $rootScope) {
     this.toRemove = [];
     this.id = 0;
     this._pushAgain = false;
+    this.pushing = false;
+    this.pulling = false;
     var defer = this.$q.defer();
     defer.resolve(false);
     this.falsePromise = defer.promise;
@@ -427,11 +429,11 @@ var taskToHash = function (task) {
 
 SyncService.prototype.push = function () {
     var _this = this;
-    if (this._pushing) {
+    if (this.pushing) {
         this._pushAgain = true;
         return;
     }
-    this._pushing = true;
+    this.pushing = true;
     this._pushAgain = false;
     this.$q.all(this.toCreate.map(function (task) {
         return _this.$http.put(_this.BASE_URL, taskToHash(task)).then(function (response) {
@@ -457,7 +459,7 @@ SyncService.prototype.push = function () {
         _this.toUpdate.length = 0;
         _this.toRemove.length = 0;
         _this.toCreate.length = 0;
-        _this._pushing = false;
+        _this.pushing = false;
         if (_this._pushAgain) {
             _this.push();
         }
@@ -570,14 +572,24 @@ SyncService.prototype.pull = function () {
     var _this = this;
     this.pulling = true;
     this.pullFromLocalStorage();
+    this.pulling = true;
     return this.pullFromNetwork().finally(function () {
         _this.$rootScope.$broadcast('tasks.change');
         _this.pulling = false;
         console.log('> SyncService pull');
+        _this.pulling = false;
         return true;
     });
 };
 // </editor-fold>
+
+SyncController = function (syncService) {
+    this.syncService = syncService;
+};
+
+SyncController.prototype.showRefresh = function () {
+    return this.syncService.pushing || this.syncService.pulling;
+};
 
 // <editor-fold description="treeTaskApp module">
 angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
@@ -586,6 +598,7 @@ angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskTodoController', TaskTodoController)
     .controller('TaskDetailsController', TaskDetailsController)
     .controller('TaskSearchController', TaskSearchController)
+    .controller('SyncController', SyncController)
     .constant('ROUTES', ROUTES)
     .service('taskService', TaskService)
     .service('syncService', SyncService)
