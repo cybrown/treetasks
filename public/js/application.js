@@ -459,14 +459,7 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
     var responseHash = rawTaskData || [];
     var hashDict = {};
     var objDict = {};
-
-    // Create a hash of all current tasks
-    if (!isLocal) {
-        var present = currentTaskArray.reduce(function (prev, task) {
-            prev[task.id] = true;
-            return prev;
-        }, {});
-    }
+    var taskPresentInRemote = {};
 
     // Create a dict of hashes, and populating primitive properties of tasks
     // Create a dict of objects
@@ -503,6 +496,9 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
                 break;
         }
         objDict[task.id] = task;
+        if (!isLocal) {
+            taskPresentInRemote[task.id] = true;
+        }
     });
 
     // Populating complex properties of objects
@@ -518,7 +514,7 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
         var oldTasksWithDeleted = currentTaskArray.slice();
         currentTaskArray.length = 0;
         oldTasksWithDeleted.forEach(function (task) {
-            if (present[task.id]) {
+            if (taskPresentInRemote[task.id]) {
                 currentTaskArray.push(task);
             } else if (task.parent !== null) {
                 task.parent.children.delete(task);
