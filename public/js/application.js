@@ -290,6 +290,7 @@ var ROUTES = [{
 }];
 // </editor-fold>
 
+// <editor-fold description="ArraySet">
 var ArraySet = function () {
     Set.apply(this, arguments);
     this._array = null;
@@ -324,6 +325,7 @@ ArraySet.prototype.toArray = function () {
     }
     return this._array;
 };
+// </editor-fold>
 
 var Task = function () {
     this.id = 0;
@@ -354,9 +356,9 @@ var SyncService = function (BASE_URL, $http, $q, $rootScope) {
     this.$rootScope = $rootScope;
     this.tasks = [];
     this.pulling = false;
-    this.toUpdate = [];
-    this.toCreate = [];
-    this.toRemove = [];
+    this.toUpdate = new ArraySet();
+    this.toCreate = new ArraySet();
+    this.toRemove = new ArraySet();
     this.id = 0;
     this._pushAgain = false;
     this.pushing = false;
@@ -375,19 +377,17 @@ SyncService.prototype.writeToLocalStorage = function () {
 
 SyncService.prototype.update = function (task) {
     task._syncStatus = TaskStatus.LOCAL_MODIFIED;
-    if (this.toUpdate.indexOf(task) === -1) {
-        this.toUpdate.push(task);
-        this.push();
-    }
+    this.toUpdate.add(task);
+    this.push();
 };
 
 SyncService.prototype.create = function (task) {
-    if (this.toCreate.indexOf(task) === -1) {
+    if (!this.toCreate.has(task)) {
         this.id++;
         task._syncStatus = TaskStatus.LOCAL_CREATED;
         task.id = -this.id;
         this.tasks.push(task);
-        this.toCreate.push(task);
+        this.toCreate.add(task);
         this.push();
     }
 };
@@ -395,9 +395,7 @@ SyncService.prototype.create = function (task) {
 SyncService.prototype.remove = function (task) {
     var index;
     task._syncStatus = TaskStatus.LOCAL_DELETED;
-    if ((index = this.toUpdate.indexOf(task)) !== -1) {
-        this.toUpdate.splice(index, 1);
-    }
+    this.toUpdate.delete(task);
     if ((index = this.tasks.indexOf(task)) !== -1) {
         this.tasks.splice(index, 1);
     }
@@ -409,9 +407,7 @@ SyncService.prototype.remove = function (task) {
             task.parent = null;
         });
     }
-    if (this.toRemove.indexOf(task) === -1) {
-        this.toRemove.push(task);
-    }
+    this.toRemove.add(task);
     this.push();
 };
 
@@ -435,30 +431,30 @@ SyncService.prototype.push = function () {
     }
     this.pushing = true;
     this._pushAgain = false;
-    this.$q.all(this.toCreate.map(function (task) {
+    this.$q.all(this.toCreate.toArray().map(function (task) {
         return _this.$http.put(_this.BASE_URL, taskToHash(task)).then(function (response) {
             task.id = response.data.id;
             task._syncStatus = TaskStatus.SYNCED;
             _this.writeToLocalStorage();
         });
     })).then(function () {
-        return _this.$q.all(_this.toUpdate.map(function (task) {
+        return _this.$q.all(_this.toUpdate.toArray().map(function (task) {
             return _this.$http.post(_this.BASE_URL + task.id, taskToHash(task)).then(function () {
                 task._syncStatus = TaskStatus.SYNCED;
                 _this.writeToLocalStorage();
             });
         }));
     }).then(function () {
-        return _this.$q.all(_this.toRemove.map(function (task) {
+        return _this.$q.all(_this.toRemove.toArray().map(function (task) {
             return _this.$http.delete(_this.BASE_URL + task.id).then(function () {
                 task._syncStatus = TaskStatus.SYNCED;
                 _this.writeToLocalStorage();
             });
         }));
     }).then(function () {
-        _this.toUpdate.length = 0;
-        _this.toRemove.length = 0;
-        _this.toCreate.length = 0;
+        _this.toUpdate.clear();
+        _this.toRemove.clear();
+        _this.toCreate.clear();
         _this.pushing = false;
         if (_this._pushAgain) {
             _this.push();
@@ -510,13 +506,13 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
         }
         switch (task._syncStatus) {
             case TaskStatus.LOCAL_CREATED:
-                _this.toCreate.push(task);
+                _this.toCreate.add(task);
                 break;
             case TaskStatus.LOCAL_DELETED:
-                _this.toRemove.push(task);
+                _this.toRemove.add(task);
                 break;
             case TaskStatus.LOCAL_MODIFIED:
-                _this.toUpdate.push(task);
+                _this.toUpdate.add(task);
                 break;
         }
         objDict[task.id] = task;
@@ -583,6 +579,7 @@ SyncService.prototype.pull = function () {
 };
 // </editor-fold>
 
+// <editor-fold description="SyncController">
 SyncController = function (syncService) {
     this.syncService = syncService;
 };
@@ -590,6 +587,7 @@ SyncController = function (syncService) {
 SyncController.prototype.showRefresh = function () {
     return this.syncService.pushing || this.syncService.pulling;
 };
+// </editor-fold>
 
 // <editor-fold description="treeTaskApp module">
 angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
