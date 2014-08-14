@@ -396,6 +396,14 @@ SyncService.prototype.remove = function (task) {
     if ((index = this.tasks.indexOf(task)) !== -1) {
         this.tasks.splice(index, 1);
     }
+    if (task.parent !== null) {
+        task.parent.children.delete(task);
+    }
+    if (task.children.toArray().length !== 0) {
+        task.children.toArray().forEach(function (task) {
+            task.parent = null;
+        });
+    }
     if (this.toRemove.indexOf(task) === -1) {
         this.toRemove.push(task);
     }
