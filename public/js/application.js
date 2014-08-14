@@ -454,23 +454,31 @@ var serializeTasks = function (tasks) {
     });
 };
 
-SyncService.prototype.deserializeTasks = function (taskObj, rawTaskData, forceUpdate) {
+SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData, isLocal) {
     var _this = this;
     var responseHash = rawTaskData || [];
     var hashDict = {};
     var objDict = {};
 
+    // Create a hash of all current tasks
+    if (!isLocal) {
+        var present = currentTaskArray.reduce(function (prev, task) {
+            prev[task.id] = true;
+            return prev;
+        }, {});
+    }
+
     // Create a dict of hashes, and populating primitive properties of tasks
     // Create a dict of objects
     responseHash.forEach(function (hash) {
         hashDict[hash.id] = hash;
-        var obj = taskObj.filter(function (task) {
+        var obj = currentTaskArray.filter(function (task) {
             return task.id === hash.id;
         });
         var task;
         if (!obj.length) {
             task = new Task();
-            taskObj.push(task);
+            currentTaskArray.push(task);
         } else {
             task = obj[0];
         }
@@ -478,7 +486,7 @@ SyncService.prototype.deserializeTasks = function (taskObj, rawTaskData, forceUp
         if (task._syncStatus === 0) {
             task._syncStatus = hash._syncStatus || TaskStatus.SYNCED;
         }
-        if (forceUpdate || task._syncStatus === TaskStatus.SYNCED) {
+        if (isLocal || task._syncStatus === TaskStatus.SYNCED) {
             task._syncStatus = hash._syncStatus || TaskStatus.SYNCED;
             task.description = hash.description;
             task.done = hash.done;
@@ -505,6 +513,18 @@ SyncService.prototype.deserializeTasks = function (taskObj, rawTaskData, forceUp
             objDict[parentId].children.add(objDict[key]);
         }
     });
+
+    if (!isLocal) {
+        var oldTasksWithDeleted = currentTaskArray.slice();
+        currentTaskArray.length = 0;
+        oldTasksWithDeleted.forEach(function (task) {
+            if (present[task.id]) {
+                currentTaskArray.push(task);
+            } else if (task.parent !== null) {
+                task.parent.children.delete(task);
+            }
+        });
+    }
 };
 
 SyncService.prototype.pullFromLocalStorage = function () {
