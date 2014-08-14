@@ -358,6 +358,7 @@ var SyncService = function (BASE_URL, $http, $q, $rootScope) {
     this.toCreate = [];
     this.toRemove = [];
     this.id = 0;
+    this._pushAgain = false;
     var defer = this.$q.defer();
     defer.resolve(false);
     this.falsePromise = defer.promise;
@@ -374,6 +375,7 @@ SyncService.prototype.update = function (task) {
     task._syncStatus = TaskStatus.LOCAL_MODIFIED;
     if (this.toUpdate.indexOf(task) === -1) {
         this.toUpdate.push(task);
+        this.push();
     }
 };
 
@@ -384,6 +386,7 @@ SyncService.prototype.create = function (task) {
         task.id = -this.id;
         this.tasks.push(task);
         this.toCreate.push(task);
+        this.push();
     }
 };
 
@@ -407,6 +410,7 @@ SyncService.prototype.remove = function (task) {
     if (this.toRemove.indexOf(task) === -1) {
         this.toRemove.push(task);
     }
+    this.push();
 };
 
 var taskToHash = function (task) {
@@ -423,6 +427,12 @@ var taskToHash = function (task) {
 
 SyncService.prototype.push = function () {
     var _this = this;
+    if (this._pushing) {
+        this._pushAgain = true;
+        return;
+    }
+    this._pushing = true;
+    this._pushAgain = false;
     this.$q.all(this.toCreate.map(function (task) {
         return _this.$http.put(_this.BASE_URL, taskToHash(task)).then(function (response) {
             task.id = response.data.id;
@@ -447,6 +457,10 @@ SyncService.prototype.push = function () {
         _this.toUpdate.length = 0;
         _this.toRemove.length = 0;
         _this.toCreate.length = 0;
+        _this._pushing = false;
+        if (_this._pushAgain) {
+            _this.push();
+        }
     });
 };
 
@@ -565,18 +579,6 @@ SyncService.prototype.pull = function () {
 };
 // </editor-fold>
 
-// <editor-fold description="SyncController">
-var SyncController = function ($scope, syncService) {
-    $scope.push = function () {
-        syncService.push();
-    };
-
-    $scope.pull = function () {
-        syncService.pull();
-    };
-};
-// </editor-fold>
-
 // <editor-fold description="treeTaskApp module">
 angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskBaseController', TaskBaseController)
@@ -584,7 +586,6 @@ angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
     .controller('TaskTodoController', TaskTodoController)
     .controller('TaskDetailsController', TaskDetailsController)
     .controller('TaskSearchController', TaskSearchController)
-    .controller('SyncController', SyncController)
     .constant('ROUTES', ROUTES)
     .service('taskService', TaskService)
     .service('syncService', SyncService)
