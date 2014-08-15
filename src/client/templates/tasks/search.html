@@ -11,8 +11,8 @@
     </li>
 </ul>
 <task-list
-   show-new="false"
-   on-create="ctrl.create(task)"
-   on-task-done="ctrl.taskDone(task)"
-   tasks="ctrl.findTasks()">
+    tasks="ctrl.findTasks()"
+    on-save="ctrl.save(task)"
+    on-create="ctrl.create(task)"
+    on-task-done="ctrl.taskDone(task)">
 </task-list>

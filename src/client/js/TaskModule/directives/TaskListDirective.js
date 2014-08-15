@@ -1,6 +1,6 @@
 var Task = require('../entities/Task');
 
-var TaskListDirective = module.exports = function (taskService, clipService) {
+var TaskListDirective = module.exports = function (clipService) {
     return {
         restrict: 'E',
         scope: {
@@ -60,19 +60,19 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
                     task.postrequisites.add(parentTask);
                     parentTask.prerequisites.add(task);
                     clipService.clear();
-                    taskService.save(task);
+                    scope.onSave({task: task});
                 }
             };
             scope.favorite = function (task) {
                 task.favorite = !task.favorite;
-                taskService.save(task);
+                scope.onSave({task: task});
             };
             scope.release = function (task) {
                 task.postrequisites.forEach(function (_task) {
                     _task.prerequisites.delete(task);
                 });
                 task.postrequisites.clear();
-                taskService.save(task);
+                scope.onSave({task: task});
                 clipService.clear();
             };
         }
