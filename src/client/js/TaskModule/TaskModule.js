@@ -2,6 +2,7 @@
 
 module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures', 'templates'])
     .controller('TaskBaseController', require('./controllers/TaskBaseController'))
+    .controller('TaskFavoriteController', require('./controllers/TaskFavoriteController'))
     .controller('TaskAllController', require('./controllers/TaskAllController'))
     .controller('TaskTodoController', require('./controllers/TaskTodoController'))
     .controller('TaskDetailsController', require('./controllers/TaskDetailsController'))

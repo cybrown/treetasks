@@ -15,13 +15,19 @@ var ROUTES = module.exports = [{
 }, {
     name: 'tasks.todo',
     url: '/',
-    templateUrl: 'views/tasks/todo.html',
+    templateUrl: 'views/tasks/generic.html',
     controller: 'TaskTodoController',
+    controllerAs: 'ctrl'
+}, {
+    name: 'tasks.favorites',
+    url: '/favorites',
+    templateUrl: 'views/tasks/generic.html',
+    controller: 'TaskFavoriteController',
     controllerAs: 'ctrl'
 }, {
     name: 'tasks.all',
     url: '/all',
-    templateUrl: 'views/tasks/all.html',
+    templateUrl: 'views/tasks/generic.html',
     controller: 'TaskAllController',
     controllerAs: 'ctrl'
 }, {
