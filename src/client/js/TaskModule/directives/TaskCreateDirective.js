@@ -5,19 +5,19 @@ var TaskCreateDirective = module.exports = function (taskService) {
         restrict: 'E',
         scope: {
             onCreate: '&',
-            parentId: '@'
+            postrequisiteTaskId: '@'
         },
         templateUrl: 'views/directives/task-create.html',
         link: function (scope, elem, attrs) {
-            scope.parent = taskService.findById(Number(scope.parentId));
+            scope.postrequisiteTask = taskService.findById(Number(scope.postrequisiteTaskId));
             scope.create = function () {
                 var task = new Task();
-                task.parent = scope.parent;
+                if (scope.postrequisiteTask) {
+                    task.postrequisites.add(scope.postrequisiteTask);
+                    scope.postrequisiteTask.prerequisites.add(task);
+                }
                 task.description = scope.description;
                 scope.description = '';
-                if (scope.parent) {
-                    scope.parent.children.add(task);
-                }
                 scope.onCreate({task: task});
             };
         }

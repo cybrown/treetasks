@@ -10,16 +10,8 @@ TaskController.prototype.get = function () {
     return this._taskService.findAll();
 };
 
-TaskController.prototype.getChildren = function (parentId) {
-    return this._taskService.findChildren(parentId);
-};
-
 TaskController.prototype.getById = function (taskId) {
     return this._taskService.find(taskId);
-};
-
-TaskController.prototype.getSearch = function (searchTerm) {
-    return this._taskService.findBySearch(searchTerm);
 };
 
 TaskController.prototype.post = function (taskId, hash) {
@@ -46,24 +38,6 @@ TaskController.prototype.getController = function () {
         ctrl.get('/', function (req, res) {
             _this.get().then(function (tasks) {
                 res.json(tasks).end();
-            }).catch(function (err) {
-                console.error(err.stack);
-                res.status(err.statusCode || 500).end();
-            });
-        });
-
-        ctrl.get('/children/:taskId', function (req, res) {
-            _this.getChildren(Number(req.params.taskId)).then(function (tasks) {
-                res.json(tasks);
-            }).catch(function (err) {
-                console.error(err.stack);
-                res.status(err.statusCode || 500).end();
-            })
-        });
-
-        ctrl.get('/search', function (req, res) {
-            _this.getSearch(req.query.q).then(function (tasks) {
-                res.json(tasks);
             }).catch(function (err) {
                 console.error(err.stack);
                 res.status(err.statusCode || 500).end();

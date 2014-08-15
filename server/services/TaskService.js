@@ -66,14 +66,6 @@ TaskService.prototype.findAll = function () {
     });
 };
 
-TaskService.prototype.findChildren = function (taskId) {
-    return this.findAll().then(function (tasks) {
-    	return tasks.filter(function (task) {
-            return task.parentId === taskId;
-        });
-    });
-};
-
 TaskService.prototype.findOrNull = function (taskId) {
     var _this = this;
     return new Promise(function (resolve, reject) {
@@ -96,15 +88,6 @@ TaskService.prototype.find = function (taskId) {
     });
 };
 
-TaskService.prototype.findBySearch = function (searchTerm) {
-    var _this = this;
-    return this.findAll().then(function (tasks) {
-    	return tasks.filter(function (task) {
-    		return task.description.indexOf(searchTerm) >= 0;
-    	});
-    });
-};
-
 TaskService.prototype.save = function (hash) {
     var _this = this;
     return _this.find(hash.id).then(function (task) {
@@ -119,12 +102,8 @@ TaskService.prototype.save = function (hash) {
 TaskService.prototype.create = function (hash) {
     var _this = this;
     var id = ++_this._id;
-    _this._tasks[id] = {
-        id: id,
-        parentId: hash.parentId,
-        description: hash.description,
-        done: false
-    };
+    _this._tasks[id] = JSON.parse(JSON.stringify(hash));
+    _this._tasks[id].id = id;
     return this._write().then(function () {
         return _this._tasks[id];
     });

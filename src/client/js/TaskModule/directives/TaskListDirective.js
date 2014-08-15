@@ -38,10 +38,10 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
             };
             scope.create = function (parentTask, description) {
                 var task = new Task();
-                task.parent = parentTask;
+                task.postrequisites.add(parentTask);
                 task.description = description;
                 if (parentTask) {
-                    parentTask.children.add(task);
+                    parentTask.prerequisites.add(task);
                 }
                 scope.onCreate({task: task});
             };
@@ -51,20 +51,17 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
             scope.paste = function (parentTask) {
                 if (clipService.hasData('task')) {
                     var task = clipService.getData();
-                    if (task.parent) {
-                        task.parent.children.delete(task);
-                    }
-                    task.parent = parentTask;
-                    parentTask.children.add(task);
+                    task.postrequisites.add(parentTask);
+                    parentTask.prerequisites.add(task);
                     clipService.clear();
                     taskService.save(task);
                 }
             };
             scope.release = function (task) {
-                if (task.parent) {
-                    task.parent.children.delete(task);
-                }
-                task.parent = null;
+                task.postrequisites.forEach(function (_task) {
+                    _task.prerequisites.delete(task);
+                });
+                task.postrequisites.clear();
                 taskService.save(task);
                 clipService.clear();
             };

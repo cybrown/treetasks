@@ -1,8 +1,14 @@
-<a ng-if="ctrl.task.parent" class="btn btn-default" ui-sref="tasks.details({id: ctrl.task.parent.id})">Parent</a>
+<task-list
+    tasks="ctrl.task.postrequisites.toArray()"
+    on-create="ctrl.create(task)"
+    on-save="ctrl.save(task)"
+    on-delete="ctrl.delete(task)"
+    hide-parent="true">
+</task-list>
 <div class="well">{{ctrl.task.description}}</div>
 <task-create
 	on-create="ctrl.create(task)"
-	parent-id="{{ctrl.task.id}}">
+    postrequisite-task-id="{{ctrl.task.id}}">
 </task-create>
 <task-list
     tasks="ctrl.findTasks()"

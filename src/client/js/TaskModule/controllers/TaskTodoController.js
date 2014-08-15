@@ -6,7 +6,7 @@ var TaskTodoController = module.exports = function ($scope, taskService) {
     this.tasks = [];
     var computeTasks = function () {
         var tt = _this.taskService.findAll().filter(function (task) {
-            return task.done === false && task.children.toArray().filter(function (task) {
+            return task.done === false && task.prerequisites.toArray().filter(function (task) {
                 return task.done === false;
             }).length === 0;
         });

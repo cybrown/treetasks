@@ -8,5 +8,5 @@ var TaskDetailsController = module.exports = function ($scope, taskService, $sta
 TaskDetailsController.prototype = Object.create(TaskBaseController.prototype);
 
 TaskDetailsController.prototype.findTasks = function () {
-    return this.task.children.toArray();
+    return this.task.prerequisites.toArray();
 };

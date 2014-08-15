@@ -4,7 +4,6 @@
             <span class="task-description" ng-class="{'done': task.done}">
                 <span>({{task._syncStatus}})</span>
                 <span>{{task.description}}</span>
-                <span ng-if="!hideParent && task.parent !== null">-> {{task.parent.description}}</span>
             </span>
             <div class="btn-group pull-right">
                 <button ng-if="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)"><span class="glyphicon glyphicon-remove"></span></button>

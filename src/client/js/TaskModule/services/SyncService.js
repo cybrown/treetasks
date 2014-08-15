@@ -64,14 +64,15 @@ SyncService.prototype.remove = function (task) {
     if ((index = this.tasks.indexOf(task)) !== -1) {
         this.tasks.splice(index, 1);
     }
-    if (task.parent !== null) {
-        task.parent.children.delete(task);
-    }
-    if (task.children.toArray().length !== 0) {
-        task.children.toArray().forEach(function (task) {
-            task.parent = null;
-        });
-    }
+    task.postrequisites.forEach(function (_task) {
+        _task.prerequisites.delete(task);
+    });
+    task.postrequisites.forEach(function (_task) {
+        _task.prerequisites.delete(task);
+    });
+    task.prerequisites.forEach(function (_task) {
+        _task.postrequisites.delete(task);
+    });
     this.toRemove.add(task);
     this.push();
 };
@@ -80,7 +81,9 @@ var taskToHash = function (task) {
     var hash = {
         description: task.description,
         done: task.done,
-        parentId: task.parent !== null ? task.parent.id :0
+        postrequisitesId: task.postrequisites.toArray().map(function (task) {
+            return task.id;
+        })
     };
     if (task.id > 0) {
         hash.id = task.id;
@@ -132,7 +135,9 @@ var serializeTasks = function (tasks) {
         return {
             id: task.id,
             _syncStatus: task._syncStatus,
-            parentId: task.parent ? task.parent.id : 0,
+            postrequisitesId: task.postrequisites.toArray().map(function (task) {
+                return task.id;
+            }),
             description: task.description,
             done: task.done
         };
@@ -188,11 +193,10 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
 
     // Populating complex properties of objects
     Object.keys(objDict).forEach(function (key) {
-        var parentId = hashDict[key].parentId;
-        if (parentId) {
-            objDict[key].parent = objDict[parentId];
-            objDict[parentId].children.add(objDict[key]);
-        }
+        hashDict[key].postrequisitesId.forEach(function (id) {
+            objDict[key].postrequisites.add(objDict[id]);
+            objDict[id].prerequisites.add(objDict[key]);
+        });
     });
 
     if (!isLocal) {
@@ -201,8 +205,10 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
         oldTasksWithDeleted.forEach(function (task) {
             if (taskPresentInRemote[task.id]) {
                 currentTaskArray.push(task);
-            } else if (task.parent !== null) {
-                task.parent.children.delete(task);
+            } else {
+                task.postrequisites.forEach(function (_task) {
+                    task.prerequisites.delete(task);
+                });
             }
         });
     }
