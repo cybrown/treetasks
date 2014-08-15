@@ -7,7 +7,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Tree Tasks</a>
+            <a class="navbar-brand"" href="#">Tree Tasks</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
@@ -15,6 +15,7 @@
                 <li cy-active-on-state="tasks.all"><a ui-sref="tasks.all">All Tasks</a></li>
                 <li cy-active-on-state="tasks.search"><a ui-sref="tasks.search">Search</a></li>
                 <li ng-controller="SyncController as ctrl"><a ng-show="ctrl.showRefresh()" class="glyphicon glyphicon-refresh"></a></li>
+                <li ng-controller="ApplicationCacheController as ctrl" ng-show="ctrl.updateReady()"><a>Update !</a></li>
             </ul>
         </div>
     </div>
