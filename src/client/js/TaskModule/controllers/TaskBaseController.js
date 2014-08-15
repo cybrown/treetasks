@@ -11,6 +11,11 @@ TaskBaseController.prototype.create = function (task) {
     this.taskService.create(task);
 };
 
+TaskBaseController.prototype.taskDone = function (task) {
+    task.done = !task.done;
+    this.taskService.save(task);
+};
+
 TaskBaseController.prototype.delete = function (task) {
     var _this = this;
     task.prerequisites.forEach(function (_task) {

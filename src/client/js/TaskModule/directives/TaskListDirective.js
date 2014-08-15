@@ -8,6 +8,7 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
             onCreate: '&',
             onSave: '&',
             onDelete: '&',
+            onTaskDone: '&',
             hideParent: '@'
         },
         templateUrl: 'views/directives/task-list.html',
@@ -33,8 +34,7 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
             };
 
             scope.setDone = function (task, done) {
-                task.done = done;
-                taskService.save(task);
+                scope.onTaskDone({task: task});
             };
             scope.create = function (parentTask, description) {
                 var task = new Task();
