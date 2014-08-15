@@ -16,6 +16,9 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
             scope.showDeleteBtn = function (task) {
                 return !!attrs.onDelete;
             };
+            scope.showCreateBtn = function (task) {
+                return !!attrs.onCreate;
+            };
             scope.showReleaseBtn = function (task) {
                 if (clipService.hasData('task')) {
                     return clipService.getData().id === task.id;

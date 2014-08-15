@@ -12,6 +12,7 @@
 </ul>
 <task-list
    show-new="false"
+   on-create="ctrl.create(task)"
    on-task-done="ctrl.taskDone(task)"
    tasks="ctrl.findTasks()">
 </task-list>
