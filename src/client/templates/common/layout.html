@@ -15,6 +15,7 @@
                 <li cy-active-on-state="tasks.todo"><a ui-sref="tasks.todo">Todo</a></li>
                 <li cy-active-on-state="tasks.all"><a ui-sref="tasks.all">All Tasks</a></li>
                 <li cy-active-on-state="tasks.search"><a ui-sref="tasks.search">Search</a></li>
+                <li cy-active-on-state="tasks.done"><a ui-sref="tasks.done">Done</a></li>
                 <li ng-controller="SyncController as ctrl"><a ng-show="ctrl.showRefresh()" class="glyphicon glyphicon-refresh"></a></li>
                 <li ng-controller="ApplicationCacheController as ctrl" ng-show="ctrl.updateReady()"><a>Update !</a></li>
             </ul>

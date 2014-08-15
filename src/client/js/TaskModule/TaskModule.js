@@ -7,6 +7,7 @@ module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular
     .controller('TaskTodoController', require('./controllers/TaskTodoController'))
     .controller('TaskDetailsController', require('./controllers/TaskDetailsController'))
     .controller('TaskSearchController', require('./controllers/TaskSearchController'))
+    .controller('TaskDoneController', require('./controllers/TaskDoneController'))
     .controller('SyncController', require('./controllers/SyncController'))
     .constant('ROUTES', require('./constants/routes'))
     .constant('BASE_URL', '/api/tasks/')

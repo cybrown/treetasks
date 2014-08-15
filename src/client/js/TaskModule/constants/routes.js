@@ -31,6 +31,12 @@ var ROUTES = module.exports = [{
     controller: 'TaskAllController',
     controllerAs: 'ctrl'
 }, {
+    name: 'tasks.done',
+    url: '/done',
+    templateUrl: 'views/tasks/done.html',
+    controller: 'TaskDoneController',
+    controllerAs: 'ctrl'
+}, {
     name: 'tasks.details',
     url: '/details/:id',
     templateUrl: 'views/tasks/details.html',
