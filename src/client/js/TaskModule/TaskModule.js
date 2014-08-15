@@ -7,7 +7,7 @@ module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular
     .controller('TaskDetailsController', require('./controllers/TaskDetailsController'))
     .controller('TaskSearchController', require('./controllers/TaskSearchController'))
     .controller('SyncController', require('./controllers/SyncController'))
-    .constant('ROUTES', require('./config/routes'))
+    .constant('ROUTES', require('./constants/routes'))
     .constant('BASE_URL', '/api/tasks/')
     .service('taskService', require('./services/TaskService'))
     .service('syncService', require('./services/SyncService'))
