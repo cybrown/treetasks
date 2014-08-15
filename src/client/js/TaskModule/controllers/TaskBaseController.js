@@ -12,5 +12,14 @@ TaskBaseController.prototype.create = function (task) {
 };
 
 TaskBaseController.prototype.delete = function (task) {
+    var _this = this;
+    task.prerequisites.forEach(function (_task) {
+        _task.postrequisites.delete(task);
+        _this.taskService.save(_task);
+    });
+    task.postrequisites.forEach(function (_task) {
+        _task.prerequisites.delete(task);
+        _this.taskService.save(_task);
+    });
     this.taskService.remove(task);
 };
