@@ -1,43 +1,5 @@
 <ul class="list-group">
-    <li
-            ng-class="{'unsynchronized': task._syncStatus !== 1}"
-            hm-hold="cut(task)"
-            hm-swipe-right="setDone(task, true)"
-            hm-swipe-left="setDone(task, false)"
-            class="task list-group-item clearfix"
-            ng-repeat="task in tasks">
-        <div ng-show="!showCreate">
-            <span class="task-description" ng-class="{'done': task.done}">
-                <span>{{task.description}}</span>
-            </span>
-            <div class="btn-group pull-right">
-                <button ng-if="showReleaseBtn(task)" type="button" class="btn btn-default" ng-click="release(task)">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
-                <button ng-if="showPasteBtn(task)" type="button" class="btn btn-default" ng-click="paste(task)">
-                    <span class="glyphicon glyphicon-arrow-down"></span>
-                </button>
-                <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default">
-                    <span class="glyphicon" ng-class="{'glyphicon-eye-open': task.parent != null,'glyphicon-eye-close': task.parent == null}"></span>
-                </button>
-                <button type="button" class="btn btn-default" ng-click="remove(task)">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </button>
-                <button type="button" class="btn btn-default" ng-click="showCreate = true">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
-            </div>
-        </div>
-        <form ng-show="showCreate" ng-submit="create(task, description); description = '';">
-            <div class="form-inline input-group">
-                <div class="input-group-addon" ng-click="showCreate = false">
-                    <span class="glyphicon glyphicon-backward"></span>
-                </div>
-                <input class="form-control" type="text" ng-model="description"/>
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
-                </span>
-            </div>
-        </form>
+    <li class="list-group-item" ng-repeat="task in tasks">
+        <task-list-element></task-list-element>
     </li>
 </ul>

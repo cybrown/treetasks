@@ -13,6 +13,7 @@ module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular
     .constant('BASE_URL', '/api/tasks/')
     .directive('taskList', require('./directives/TaskListDirective'))
     .directive('taskCreate', require('./directives/TaskCreateDirective'))
+    .directive('taskListElement', require('./directives/TaskListElementDirective'))
     .config(function ($stateProvider, $urlRouterProvider, ROUTES) {
         $urlRouterProvider.otherwise('/');
         ROUTES.forEach(function (route) {
