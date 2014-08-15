@@ -21,3 +21,8 @@ TaskFavoriteController.prototype = Object.create(TaskBaseController.prototype);
 TaskFavoriteController.prototype.findTasks = function () {
     return this.tasks;
 };
+
+TaskFavoriteController.prototype.create = function (task) {
+    task.favorite = true;
+    TaskBaseController.prototype.create.call(this, task);
+};
