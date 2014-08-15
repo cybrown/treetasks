@@ -1,7 +1,6 @@
 var gulp = require('gulp');
 var runSequence = require('run-sequence');
 var browserify = require('gulp-browserify');
-var uglify = require('gulp-uglify');
 var rimraf = require('gulp-rimraf');
 var jshint = require('gulp-jshint');
 
@@ -24,7 +23,6 @@ gulp.task('jshint', function () {
 gulp.task('browserify.prod', function () {
     return gulp.src('./src/client/js/application.js')
         .pipe(browserify())
-        .pipe(uglify())
         .pipe(gulp.dest('./public/js/'));
 });
 
@@ -35,7 +33,7 @@ gulp.task('browserify.dev', function () {
 });
 
 gulp.task('clean', function () {
-    return gulp.src('./public/js/application.js', {read: false})
+    return gulp.src('./public/js/**/*.js', {read: false})
         .pipe(rimraf());
 });
 
