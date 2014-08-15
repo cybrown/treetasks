@@ -16,3 +16,17 @@ TaskDetailsController.prototype.create = function (task) {
     this.task.prerequisites.add(task);
     TaskBaseController.prototype.create.call(this, task);
 };
+
+TaskDetailsController.prototype.removePrerequisite = function (task) {
+    this.task.prerequisites.delete(task);
+    task.postrequisites.delete(this.task);
+    TaskBaseController.prototype.save(this, this.task);
+    TaskBaseController.prototype.save(this, task);
+};
+
+TaskDetailsController.prototype.removePostrequisite = function (task) {
+    this.task.postrequisites.delete(task);
+    task.prerequisites.delete(this.task);
+    TaskBaseController.prototype.save(this, this.task);
+    TaskBaseController.prototype.save(this, task);
+};

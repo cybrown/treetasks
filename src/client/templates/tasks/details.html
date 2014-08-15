@@ -1,6 +1,7 @@
 <task-list
     tasks="ctrl.task.postrequisites.toArray()"
     on-create="ctrl.create(task)"
+    on-remove-postrequisite="ctrl.removePostrequisite(task)"
     on-save="ctrl.save(task)">
 </task-list>
 <div class="well">{{ctrl.task.description}}</div>
@@ -9,5 +10,6 @@
     tasks="ctrl.findTasks()"
     on-create="ctrl.create(task)"
     on-save="ctrl.save(task)"
+    on-remove-prerequisite="ctrl.removePrerequisite(task)"
     on-task-done="ctrl.taskDone(task)">
 </task-list>

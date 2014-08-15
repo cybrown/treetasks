@@ -9,6 +9,8 @@ var TaskListDirective = module.exports = function (clipService) {
             onSave: '&',
             onDelete: '&',
             onTaskDone: '&',
+            onRemovePrerequisite: '&',
+            onRemovePostrequisite: '&',
             hideParent: '@'
         },
         templateUrl: 'views/directives/task-list.html',
@@ -18,6 +20,12 @@ var TaskListDirective = module.exports = function (clipService) {
             };
             scope.showCreateBtn = function (task) {
                 return !!attrs.onCreate;
+            };
+            scope.showRemovePrerequisiteBtn = function (task) {
+                return !!attrs.onRemovePrerequisite;
+            };
+            scope.showRemovePostrequisiteBtn = function (task) {
+                return !!attrs.onRemovePostrequisite;
             };
             scope.showReleaseBtn = function (task) {
                 if (clipService.hasData('task')) {
@@ -74,6 +82,12 @@ var TaskListDirective = module.exports = function (clipService) {
                 task.postrequisites.clear();
                 scope.onSave({task: task});
                 clipService.clear();
+            };
+            scope.removePrerequisite = function (task) {
+                scope.onRemovePrerequisite({task: task});
+            };
+            scope.removePostrequisite = function (task) {
+                scope.onRemovePostrequisite({task: task});
             };
         }
     };

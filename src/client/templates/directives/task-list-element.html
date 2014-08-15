@@ -24,6 +24,12 @@
             <button ng-if="showDeleteBtn(task)" type="button" class="btn btn-default" ng-click="remove(task)">
                 <span class="glyphicon glyphicon-trash"></span>
             </button>
+            <button ng-if="showRemovePrerequisiteBtn(task)" type="button" class="btn btn-default" ng-click="removePrerequisite(task)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+            <button ng-if="showRemovePostrequisiteBtn(task)" type="button" class="btn btn-default" ng-click="removePostrequisite(task)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
             <button ng-if="showCreateBtn(task)" type="button" class="btn btn-default" ng-click="showCreate = true">
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
