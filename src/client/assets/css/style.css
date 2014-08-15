@@ -24,3 +24,7 @@ body {
 .task form {
     margin-bottom: 0;
 }
+
+.task.unsynchronized {
+    background-color: red;
+}
