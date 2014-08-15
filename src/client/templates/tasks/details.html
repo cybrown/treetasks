@@ -6,10 +6,7 @@
     hide-parent="true">
 </task-list>
 <div class="well">{{ctrl.task.description}}</div>
-<task-create
-	on-create="ctrl.create(task)"
-    postrequisite-task-id="{{ctrl.task.id}}">
-</task-create>
+<task-create on-create="ctrl.create(task)"></task-create>
 <task-list
     tasks="ctrl.findTasks()"
     on-create="ctrl.create(task)"

@@ -10,3 +10,9 @@ TaskDetailsController.prototype = Object.create(TaskBaseController.prototype);
 TaskDetailsController.prototype.findTasks = function () {
     return this.task.prerequisites.toArray();
 };
+
+TaskDetailsController.prototype.create = function (task) {
+    task.postrequisites.add(this.task);
+    this.task.prerequisites.add(task);
+    TaskBaseController.prototype.create.call(this, task);
+};
