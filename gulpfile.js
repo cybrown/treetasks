@@ -100,11 +100,15 @@ gulp.task('build.prod', function () {
 });
 
 gulp.task('dev', function () {
-    return runSequence('clean', 'bower', 'assets', 'templateCache', 'build.dev', 'manifest');
+    return runSequence('clean', ['bower', 'assets', 'templateCache', 'build.dev'], 'manifest');
 });
 
 gulp.task('prod', function () {
-    return runSequence('clean', 'bower', 'assets', 'templateCache', 'build.prod', 'manifest');
+    return runSequence('clean', ['bower', 'assets', 'templateCache', 'build.prod'], 'manifest');
+});
+
+gulp.task('watch', function () {
+    gulp.watch('src/**/*', ['dev']);
 });
 
 gulp.task('default', ['prod']);
