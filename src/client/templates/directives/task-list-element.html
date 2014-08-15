@@ -18,7 +18,7 @@
             <button ui-sref="tasks.details({id: task.id})" type="button" class="btn btn-default">
                 <span class="glyphicon" ng-class="{'glyphicon-eye-open': task.parent != null,'glyphicon-eye-close': task.parent == null}"></span>
             </button>
-            <button type="button" class="btn btn-default" ng-click="remove(task)">
+            <button ng-if="showDeleteBtn(task)" type="button" class="btn btn-default" ng-click="remove(task)">
                 <span class="glyphicon glyphicon-trash"></span>
             </button>
             <button type="button" class="btn btn-default" ng-click="favorite(task)">
