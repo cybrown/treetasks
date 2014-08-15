@@ -16,7 +16,7 @@ var MAIN_JS_PATH = JS_PATH + '/application.js';
 var JS_DIST_PATH = DIST_PATH + '/js';
 
 var MANIFEST_OPTIONS = {
-    hash: true,
+    timestamp: true,
     preferOnline: false,
     network: ['http://*', 'https://*', '*'],
     filename: MANIFEST_FILE_NAME,
@@ -48,15 +48,7 @@ gulp.task('bower', function () {
         .pipe(gulp.dest(LIB_PATH));
 });
 
-gulp.task('manifest.dev', function () {
-    MANIFEST_OPTIONS.hash = false;
-    MANIFEST_OPTIONS.timestamp = true;
-    gulp.src(DIST_PATH + '/**/*')
-        .pipe(manifest(MANIFEST_OPTIONS))
-        .pipe(gulp.dest(DIST_PATH));
-});
-
-gulp.task('manifest.prod', function () {
+gulp.task('manifest', function () {
     gulp.src(DIST_PATH + '/**/*')
         .pipe(manifest(MANIFEST_OPTIONS))
         .pipe(gulp.dest(DIST_PATH));
@@ -94,11 +86,11 @@ gulp.task('build.prod', function () {
 });
 
 gulp.task('dev', function () {
-    return runSequence('clean', 'bower', 'assets', 'build.dev', 'manifest.dev');
+    return runSequence('clean', 'bower', 'assets', 'build.dev', 'manifest');
 });
 
 gulp.task('prod', function () {
-    return runSequence('clean', 'bower', 'assets', 'build.prod', 'manifest.prod');
+    return runSequence('clean', 'bower', 'assets', 'build.prod', 'manifest');
 });
 
 gulp.task('default', ['prod']);
