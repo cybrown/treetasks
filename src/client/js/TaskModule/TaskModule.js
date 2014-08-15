@@ -1,6 +1,6 @@
 /* global angular */
 
-module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures'])
+module.exports = angular.module('treeTaskApp', ['ui.router', 'cy.util', 'angular-gestures', 'templates'])
     .controller('TaskBaseController', require('./controllers/TaskBaseController'))
     .controller('TaskAllController', require('./controllers/TaskAllController'))
     .controller('TaskTodoController', require('./controllers/TaskTodoController'))

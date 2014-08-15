@@ -5,9 +5,13 @@ var rimraf = require('gulp-rimraf');
 var jshint = require('gulp-jshint');
 var manifest = require('gulp-manifest');
 var mainBowerFiles = require('main-bower-files');
+var templateCache = require('gulp-angular-templatecache');
+var minifyHTML = require('gulp-minify-html');
 
 var MANIFEST_FILE_NAME = 'manifest.appcache';
-var ASSETS_PATH = 'src/client/assets/**/*';
+var CLIENT_PATH = 'src/client';
+var ASSETS_PATH = CLIENT_PATH + '/assets';
+var TEMPLATE_PATH = CLIENT_PATH + '/templates';
 var DIST_PATH = 'public';
 var LIB_PATH = DIST_PATH + '/lib';
 var BOWER_PATH = 'bower_components';
@@ -38,8 +42,18 @@ var JSHINT_OPTIONS = {
     }
 };
 
+gulp.task('templateCache', function () {
+    return gulp.src(TEMPLATE_PATH + '/**/*')
+        .pipe(minifyHTML())
+        .pipe(templateCache({
+            standalone: true,
+            root: 'views/'
+        }))
+        .pipe(gulp.dest(JS_DIST_PATH));
+});
+
 gulp.task('assets', function () {
-    return gulp.src(ASSETS_PATH)
+    return gulp.src(ASSETS_PATH + '/**/*')
         .pipe(gulp.dest(DIST_PATH));
 });
 
@@ -86,11 +100,11 @@ gulp.task('build.prod', function () {
 });
 
 gulp.task('dev', function () {
-    return runSequence('clean', 'bower', 'assets', 'build.dev', 'manifest');
+    return runSequence('clean', 'bower', 'assets', 'templateCache', 'build.dev', 'manifest');
 });
 
 gulp.task('prod', function () {
-    return runSequence('clean', 'bower', 'assets', 'build.prod', 'manifest');
+    return runSequence('clean', 'bower', 'assets', 'templateCache', 'build.prod', 'manifest');
 });
 
 gulp.task('default', ['prod']);
