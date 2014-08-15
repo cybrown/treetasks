@@ -313,15 +313,12 @@ ArraySet.prototype.delete = function () {
 };
 
 ArraySet.prototype.toArray = function () {
+    var _this = this;
     if (!this._array) {
         this._array = [];
-        var i = this._es6shim_iterator_();
-        var c;
-        while (true) {
-            c = i.next();
-            if (c.done) break;
-            this._array.push(c.value);
-        }
+        this.forEach(function (item) {
+            _this._array.push(item);
+        });
     }
     return this._array;
 };
