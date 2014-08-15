@@ -28,3 +28,7 @@ body {
 .task.unsynchronized {
     background-color: red;
 }
+
+.task.favorite {
+    background-color: yellow;
+}

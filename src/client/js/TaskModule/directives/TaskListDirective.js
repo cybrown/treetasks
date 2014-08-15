@@ -57,6 +57,10 @@ var TaskListDirective = module.exports = function (taskService, clipService) {
                     taskService.save(task);
                 }
             };
+            scope.favorite = function (task) {
+                task.favorite = !task.favorite;
+                taskService.save(task);
+            };
             scope.release = function (task) {
                 task.postrequisites.forEach(function (_task) {
                     _task.prerequisites.delete(task);

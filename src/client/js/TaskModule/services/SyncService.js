@@ -77,20 +77,6 @@ SyncService.prototype.remove = function (task) {
     this.push();
 };
 
-var taskToHash = function (task) {
-    var hash = {
-        description: task.description,
-        done: task.done,
-        postrequisitesId: task.postrequisites.toArray().map(function (task) {
-            return task.id;
-        })
-    };
-    if (task.id > 0) {
-        hash.id = task.id;
-    }
-    return hash;
-};
-
 SyncService.prototype.push = function () {
     var _this = this;
     if (this.pushing) {
@@ -132,16 +118,26 @@ SyncService.prototype.push = function () {
 
 var serializeTasks = function (tasks) {
     return tasks.map(function (task) {
-        return {
-            id: task.id,
-            _syncStatus: task._syncStatus,
-            postrequisitesId: task.postrequisites.toArray().map(function (task) {
-                return task.id;
-            }),
-            description: task.description,
-            done: task.done
-        };
+        var hash = taskToHash(task);
+        hash.id = task.id;
+        hash._syncStatus = task._syncStatus;
+        return hash;
     });
+};
+
+var taskToHash = function (task) {
+    var hash = {
+        description: task.description,
+        done: task.done,
+        favorite: task.favorite,
+        postrequisitesId: task.postrequisites.toArray().map(function (task) {
+            return task.id;
+        })
+    };
+    if (task.id > 0) {
+        hash.id = task.id;
+    }
+    return hash;
 };
 
 SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData, isLocal) {
@@ -173,6 +169,7 @@ SyncService.prototype.deserializeTasks = function (currentTaskArray, rawTaskData
             task._syncStatus = hash._syncStatus || TaskStatus.SYNCED;
             task.description = hash.description;
             task.done = hash.done;
+            task.favorite = !!hash.favorite;
         }
         switch (task._syncStatus) {
             case TaskStatus.LOCAL_CREATED:

@@ -6,6 +6,7 @@ var Task = module.exports = function () {
 
     this.description = '';
     this.done = false;
+    this.favorite = false;
     this.postrequisites = new ArraySet();
     this.prerequisites = new ArraySet();
 };
